@@ -12,7 +12,7 @@ print(1)
 def read(conn):
 	while True:
 		print('read')
-		conn.recv(30000)
+		conn.recv(30)
 		
 def send():
 	sc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

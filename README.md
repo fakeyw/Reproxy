@@ -40,7 +40,7 @@ client			  server
 
 cli-work-sock bind local port with select&LOCK (out first)
 
-cli-sock           -->      Handler Main sock 
+cli-conn           -->      Handler Main sock 
 
 ​				   Accpet  a  conn 
 
@@ -50,13 +50,13 @@ cli-sock           -->      Handler Main sock
 
 ​					        the working one wait for conn
 
-close sock	 <--     distribute the free port
+close conn	 <--     distribute the free port
 
-cli-send-sock   -->    connect, save as serv-recv-sock
+cli-send-conn   -->    connect, save as serv-recv-conn
 
-cli-recv-sock    -->    connect, save as serv-send-sock
+cli-recv-conn    -->    connect, save as serv-send-conn
 
-​				   thread-1 change work as recv thread
+​				   thread-1 change its work as recv thread
 
 ​				   start thread-2 as send thread
 
@@ -66,16 +66,60 @@ start thread-2 as recv thread
 
 
 
+About threads
+
+cli
+
 t1 start local socket, connect serv- > recv from local send to serv
 
 t2 			recv from serv send to local
+
+​				serv
 
 ​				t1 connect cli -> recv from cli send to remote
 
 ​				t2           (accept conn) recv from remote, send to cli
 
-
-
-
-
 conn_pool created by the first thread of a service, and then pass 
+
+
+
+About sockets
+
+cli - local connect() static
+
+cli - serv connect() static
+
+serv - remote bind() active
+
+serv - cli bind() active --(after two acceptions)-> static 
+
+
+
+关于socket select protocol
+
+是为了分辨外部访问多个socket，避免经过反代转发后丢失返回目标，类似路由器的路由表
+
+(反代貌似就是干了比路由器相反的活)
+
+现在的问题是，在异步传输模式下，怎样分辨协议包？
+
+设置本地conn的recv buffer为N，读到raw(可能是原包的一部分)
+
+uuid+rawlen+raw 
+
+rawlen为raw长度，rawlen的长度(bin)为2^rawlen = N
+
+发送端：如果传入packer的数据长度超过N，则会被自动分割到list中，分别发送
+
+接收端：将接收到的报文传入parser会拿到下次要接收的报文长度，长度为0时重置为len(uuid)+len(rawlen)+rawlen，那么就会有几种情况出现：
+
+- 读入太多，包含一个报文以上 -- parser会将完整报文内容+uuid放入队列中等待调用，需读长度由最后一个未读完的报文决定
+- 实际读入比需读偏少，直接传入，parser会将上次记录的减去
+- socket的buffer限制，在实例化协议的时候加入参数，将需读内容分割
+- 读入过少，未读到完整报文头，记录，以最大值读取，拼接后再次分析
+
+已测试python的一个socket conn可同时读写（实际上有队列等待）
+
+
+

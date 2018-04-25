@@ -1,10 +1,6 @@
-import threading
-import socket
+from main.client_threads import *
 
-class client_t(threading.Thread):
-	def __init__(self,bind,forward,*args,**kw):
-		self.bind = bind
-		self.forward = forward
-		
-	def run():
-		
+remote = ('127.0.0.1',7000) #reproxy service
+local = ('127.0.0.1',9000) #local service
+t1 = cli_recv_t(remote,local)
+t1.start()

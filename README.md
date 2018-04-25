@@ -181,11 +181,11 @@ About sockets
 
 cli - local connect() active
 
-cli - serv bind() static
+cli - serv connect() active
 
 serv - remote bind() active
 
-serv - cli conn() active
+serv - cli bind() active
 
 ---
 
@@ -195,7 +195,7 @@ serv - cli conn() active
 
 给类添加id貌似失败了
 
-借用了一下对象锁的实现方法，成功套了一个id
+借用了一下对象锁的实现方法，成功给socket对象套了一个id
 
 { uuid : [conn1,conn2], ... }
 

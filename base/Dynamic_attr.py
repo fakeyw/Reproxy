@@ -1,4 +1,4 @@
-class da(object):
+class DA(object):
 	__slots__ = ('__local', '__dict__', '__name__', '__wrapped__')
 	
 	def __init__(self,src,dict):
@@ -12,37 +12,37 @@ class da(object):
 	@property
 	def __dict__(self):
 		try:
-			return self._get_current_object().__dict__
+			return self.s.__dict__
 		except RuntimeError:
 			raise AttributeError('__dict__')
 
 	def __repr__(self):
 		try:
-			obj = self._get_current_object()
+			obj = self.s
 		except RuntimeError:
 			return '<%s unbound>' % self.__class__.__name__
 		return repr(obj)
 
 	def __bool__(self):
 		try:
-			return bool(self._get_current_object())
+			return bool(self.s)
 		except RuntimeError:
 			return False
 
 	def __unicode__(self):
 		try:
-			return unicode(self._get_current_object())  # noqa
+			return unicode(self.s)  # noqa
 		except RuntimeError:
 			return repr(self)
 
 	def __dir__(self):
 		try:
-			return dir(self._get_current_object())
+			return dir(self.s)
 		except RuntimeError:
 			return []
 
 	def __delitem__(self, key):
-		del self._get_current_object()[key]
+		del self.s[key]
 	
 	def __getattr__(self,name):
 		return getattr(self.s,name)
@@ -57,7 +57,7 @@ class da(object):
 		pass
 	
 	def __str__(self):
-		return "Secured "+str(self.src)
+		return "Secured "+str(self.s)
 		
 	def __setattr__(self,k,v):
 		if k in object.__getattr__(self,'attr_list'):
@@ -67,7 +67,6 @@ class da(object):
 		
 	#__setattr__ = lambda x, n, v: setattr(x.s, n, v)
 	__delattr__ = lambda x, n: delattr(x, n)
-	__str__ = lambda x: str(x)
 	__lt__ = lambda x, o: x.s < o
 	__le__ = lambda x, o: x.s <= o
 	__eq__ = lambda x, o: x.s == o
